@@ -19,6 +19,7 @@ async function getAllFilesInDirectory(directory) {
 }
 
 async function runAction() {
+  // Process inputs
   const allureServerUrl = new URL(
     core.getInput("allure-server-url", { required: true })
   );
@@ -33,8 +34,6 @@ async function runAction() {
   const allureCleanResults = core.getInput("allure-clean-results", {
     required: true,
   });
-  let csrfAccessToken;
-  let cookies = [];
 
   // Get all the files
   const files = await getAllFilesInDirectory(allureResultsDirectory);
@@ -44,6 +43,8 @@ async function runAction() {
   }
 
   // Login if needed
+  let csrfAccessToken;
+  let cookies = [];
   if (isSecure === "true") {
     if (!securityUser) {
       throw Error("No auth username provided");
@@ -56,9 +57,7 @@ async function runAction() {
       `${allureServerUrl}allure-docker-service/login`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: securityUser,
           password: securityPass,
@@ -66,6 +65,7 @@ async function runAction() {
       }
     );
     if (loginResponse.ok) {
+      console.log("Done logging in...");
       const loginCookies = loginResponse.headers.raw()["set-cookie"];
       const csrfAccessTokenPattern = /csrf_access_token=([^;]+)/;
       for (const cookie of loginCookies) {
@@ -90,13 +90,14 @@ async function runAction() {
   }
 
   // Fetch latest report ID
-  const latestReportUrl = `${allureServerUrl}allure-docker-service/projects/${projectId}`;
-  const latestReportResponse = await fetch(latestReportUrl, {
-    method: "GET",
-    headers: { Cookie: cookies },
-  });
+  console.log("Getting report link...");
+  const latestReportResponse = await fetch(
+    `${allureServerUrl}allure-docker-service/projects/${projectId}`,
+    { method: "GET", headers: { Cookie: cookies } }
+  );
   const latestReportBody = await latestReportResponse.json();
   if (latestReportResponse.ok) {
+    console.log("Done getting report link...");
     const latestReportId = latestReportBody.data.project.reports_id[1];
     const reportLink = `${allureServerUrl}allure-docker-service-ui/projects/${projectId}/reports/${
       parseInt(latestReportId) + 1
@@ -111,13 +112,12 @@ async function runAction() {
   // Clean results
   if (allureCleanResults === "true") {
     console.log("Cleaning results...");
-    const cleanResultsUrl = `${allureServerUrl}allure-docker-service/clean-results?project_id=${projectId}`;
-    const cleanResultsResponse = await fetch(cleanResultsUrl, {
-      method: "GET",
-      headers: { Cookie: cookies },
-    });
+    const cleanResultsResponse = await fetch(
+      `${allureServerUrl}allure-docker-service/clean-results?project_id=${projectId}`,
+      { method: "GET", headers: { Cookie: cookies } }
+    );
     if (cleanResultsResponse.ok) {
-      console.log("Done cleaning results");
+      console.log("Done cleaning results...");
     } else {
       throw Error(
         `Failed to clean results. Status code: ${
@@ -133,22 +133,24 @@ async function runAction() {
 
   // Send results
   console.log("Sending results...");
-  const sendResultsUrl = `${allureServerUrl}allure-docker-service/send-results?project_id=${projectId}`;
   const formData = new FormData();
   files.forEach((filePath) => {
     formData.append("files[]", fs.createReadStream(filePath));
   });
-  const sendResultsResponse = await fetch(sendResultsUrl, {
-    method: "POST",
-    body: formData,
-    headers: {
-      "X-CSRF-TOKEN": csrfAccessToken,
-      ...formData.getHeaders(),
-      Cookie: cookies,
-    },
-  });
+  const sendResultsResponse = await fetch(
+    `${allureServerUrl}allure-docker-service/send-results?project_id=${projectId}`,
+    {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-CSRF-TOKEN": csrfAccessToken,
+        ...formData.getHeaders(),
+        Cookie: cookies,
+      },
+    }
+  );
   if (sendResultsResponse.ok) {
-    console.log("Done send-results");
+    console.log("Done sending results...");
   } else {
     throw Error(
       `Failed to send results. Status code: ${
@@ -170,6 +172,7 @@ async function runAction() {
     });
     const responseBody = await response.json();
     if (response.ok) {
+      console.log("Done generating report...");
       const reportLink = responseBody.data.report_url;
       console.log("Allure Report Link:", reportLink);
     } else {
