@@ -77,7 +77,11 @@ async function runAction() {
       }
       cookies = loginCookies.join("; ");
     } else {
-      throw Error(`Status code of login was: ${response.statusCode}`);
+      throw Error(
+        `Status code of login was: ${
+          loginResponse.statusCode
+        } Body: ${await loginResponse.json()}`
+      );
     }
   } else if (isSecure === "false") {
     console.log("is-secure set to false, skipping login...");
@@ -91,9 +95,8 @@ async function runAction() {
     method: "GET",
     headers: { Cookie: cookies },
   });
-
+  const latestReportBody = await latestReportResponse.json();
   if (latestReportResponse.ok) {
-    const latestReportBody = await latestReportResponse.json();
     const latestReportId = latestReportBody.data.project.reports_id[1];
     const reportLink = `${allureServerUrl}allure-docker-service-ui/projects/${projectId}/reports/${
       parseInt(latestReportId) + 1
@@ -101,7 +104,7 @@ async function runAction() {
     console.log("Allure Report Link:", reportLink);
   } else {
     throw Error(
-      `Failed to fetch latest report ID. Status code: ${latestReportResponse.statusCode}`
+      `Failed to fetch latest report ID. Status code: ${latestReportResponse.statusCode} Body: ${latestReportBody}`
     );
   }
 
@@ -117,7 +120,9 @@ async function runAction() {
       console.log("Done cleaning results");
     } else {
       throw Error(
-        `Failed to clean results. Status code: ${cleanResultsResponse.statusCode}`
+        `Failed to clean results. Status code: ${
+          cleanResultsResponse.statusCode
+        } Body: ${await cleanResultsResponse.json()}`
       );
     }
   } else if (allureCleanResults === "false") {
@@ -146,7 +151,9 @@ async function runAction() {
     console.log("Done send-results");
   } else {
     throw Error(
-      `Failed to send results. Status code: ${sendResultsResponse.statusCode}`
+      `Failed to send results. Status code: ${
+        sendResultsResponse.statusCode
+      } Body: ${await sendResultsResponse.json()}`
     );
   }
 
@@ -157,18 +164,17 @@ async function runAction() {
     const executionFrom = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}`;
     const executionFromEncoded = encodeURIComponent(executionFrom);
     const generateUrl = `${allureServerUrl}allure-docker-service/generate-report?project_id=${projectId}&execution_name=${executionName}&execution_from=${executionFromEncoded}`;
-    let response;
-    response = await fetch(generateUrl, {
+    const response = await fetch(generateUrl, {
       method: "GET",
       headers: { "X-CSRF-TOKEN": csrfAccessToken, Cookie: cookies },
     });
+    const responseBody = await response.json();
     if (response.ok) {
-      const responseBody = await response.json();
       const reportLink = responseBody.data.report_url;
       console.log("Allure Report Link:", reportLink);
     } else {
       throw Error(
-        `Failed to generate report. Status code: ${response.statusCode}`
+        `Failed to generate report. Status code: ${response.statusCode} Body: ${responseBody}`
       );
     }
   } else if (allureGenerate === "false") {
