@@ -1,0 +1,41 @@
+name: "send-allure-results"
+description: "Sending allure results to the Allure Server"
+inputs:
+  allure-server-url:
+    description: "Full url of your deployed allure-server"
+    required: true
+    default: "default"
+  allure-results-directory:
+    description: "Path of allure-results"
+    required: true
+    default: "./allure-results"
+  project-id:
+    description: "The project ID to be used"
+    required: true
+    default: "default"
+  is-secure:
+    description: "If Allure Server has auth enabled set it to true"
+    required: true
+    default: true
+  security-user:
+    description: "Admin user name"
+    required: false
+    default: "admin"
+  security-pass:
+    description: "Admin password"
+    required: false
+    default: "password"
+  allure-generate:
+    description: "If you would like to generate results manually, set it to true"
+    required: true
+    default: false
+  allure-clean-results:
+    description: "If you want to send clean results, set it to true"
+    required: true
+    default: true
+runs:
+  using: "node12"
+  main: "index.js"
+branding:
+  icon: "file-text"
+  color: "red"

@@ -1,0 +1,13 @@
+{
+  "name": "send-allure-results",
+  "version": "1.0.0",
+  "description": "Sends the allure results",
+  "main": "index.js",
+  "keywords": [],
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0",
+    "fetch": "^1.1.0",
+    "form-data": "4.0.0"
+  }
+}
