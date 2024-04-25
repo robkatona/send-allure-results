@@ -53,7 +53,7 @@ async function runAction() {
     }
     console.log("Logging in...");
     const loginResponse = await fetch(
-      `${allureServerUrl}/allure-docker-service/login`,
+      `${allureServerUrl}allure-docker-service/login`,
       {
         method: "POST",
         headers: {
@@ -86,7 +86,7 @@ async function runAction() {
   }
 
   // Fetch latest report ID
-  const latestReportUrl = `${allureServerUrl}/allure-docker-service/projects/${projectId}`;
+  const latestReportUrl = `${allureServerUrl}allure-docker-service/projects/${projectId}`;
   const latestReportResponse = await fetch(latestReportUrl, {
     method: "GET",
     headers: { Cookie: cookies },
@@ -95,7 +95,7 @@ async function runAction() {
   if (latestReportResponse.ok) {
     const latestReportBody = await latestReportResponse.json();
     const latestReportId = latestReportBody.data.project.reports_id[1];
-    const reportLink = `${allureServerUrl}/allure-docker-service-ui/projects/${projectId}/reports/${
+    const reportLink = `${allureServerUrl}allure-docker-service-ui/projects/${projectId}/reports/${
       parseInt(latestReportId) + 1
     }`;
     console.log("Allure Report Link:", reportLink);
@@ -108,7 +108,7 @@ async function runAction() {
   // Clean results
   if (allureCleanResults === "true") {
     console.log("Cleaning results...");
-    const cleanResultsUrl = `${allureServerUrl}/allure-docker-service/clean-results?project_id=${projectId}`;
+    const cleanResultsUrl = `${allureServerUrl}allure-docker-service/clean-results?project_id=${projectId}`;
     const cleanResultsResponse = await fetch(cleanResultsUrl, {
       method: "GET",
       headers: { Cookie: cookies },
@@ -128,7 +128,7 @@ async function runAction() {
 
   // Send results
   console.log("Sending results...");
-  const sendResultsUrl = `${allureServerUrl}/allure-docker-service/send-results?project_id=${projectId}`;
+  const sendResultsUrl = `${allureServerUrl}allure-docker-service/send-results?project_id=${projectId}`;
   const formData = new FormData();
   files.forEach((filePath) => {
     formData.append("files[]", fs.createReadStream(filePath));
@@ -156,7 +156,7 @@ async function runAction() {
     const executionName = "GitHub+Actions";
     const executionFrom = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}`;
     const executionFromEncoded = encodeURIComponent(executionFrom);
-    const generateUrl = `${allureServerUrl}/allure-docker-service/generate-report?project_id=${projectId}&execution_name=${executionName}&execution_from=${executionFromEncoded}`;
+    const generateUrl = `${allureServerUrl}allure-docker-service/generate-report?project_id=${projectId}&execution_name=${executionName}&execution_from=${executionFromEncoded}`;
     let response;
     response = await fetch(generateUrl, {
       method: "GET",
