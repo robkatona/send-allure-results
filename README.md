@@ -57,7 +57,7 @@ If the results have to be cleaned before sending a new result, set it to true. D
 
 ```yml
 - name: Send Results to Allure Server and Generate Allure Report
-  uses: robkatona/send-allure-results-action@1
+  uses: robkatona/send-allure-results@1
   # always() needed because we want report for failed tests as well
   if: ${{ always() }}
   with:
