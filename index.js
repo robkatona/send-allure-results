@@ -155,7 +155,7 @@ async function runAction() {
     throw Error(
       `Failed to send results. Status code: ${
         sendResultsResponse.statusCode
-      } Body: ${await sendResultsResponse.json()}`
+      } Body: ${await sendResultsResponse.text()}`
     );
   }
 
