@@ -90,7 +90,7 @@ async function runAction() {
       throw Error(
         `Status code of login was: ${
           loginResponse.statusCode
-        } Body: ${await loginResponse.json()}`
+        } Body: ${await loginResponse.text()}`
       );
     }
   } else if (isSecure === "false") {
@@ -132,7 +132,7 @@ async function runAction() {
       throw Error(
         `Failed to clean results. Status code: ${
           cleanResultsResponse.statusCode
-        } Body: ${await cleanResultsResponse.json()}`
+        } Body: ${await cleanResultsResponse.text()}`
       );
     }
   } else if (cleanResults === "false") {
