@@ -7,11 +7,12 @@ const glob = require("glob-promise");
 const fetch = require("node-fetch");
 
 async function getAllFilesInDirectory(directory) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    directory = getAllFilesMatchingPattern(directory)[0];
     fs.readdir(directory, (err, files) => {
       if (err) {
-        const directories = getAllFilesMatchingPattern(directory);
-        directory = directories[0];
+        reject(err);
+        return;
       }
       const filePaths = files.map((file) => path.join(directory, file));
       resolve(filePaths);
