@@ -3,19 +3,29 @@ const path = require("path");
 const FormData = require("form-data");
 const core = require("@actions/core");
 const github = require("@actions/github");
+const glob = require("glob-promise");
 const fetch = require("node-fetch");
 
 async function getAllFilesInDirectory(directory) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     fs.readdir(directory, (err, files) => {
       if (err) {
-        reject(err);
-        return;
+        const directories = getAllFilesMatchingPattern(directory);
+        directory = directories[0];
       }
       const filePaths = files.map((file) => path.join(directory, file));
       resolve(filePaths);
     });
   });
+}
+
+async function getAllFilesMatchingPattern(pattern) {
+  try {
+    const filePaths = await glob(pattern);
+    return filePaths;
+  } catch (err) {
+    throw err;
+  }
 }
 
 async function runAction() {
@@ -31,7 +41,7 @@ async function runAction() {
   const securityUser = core.getInput("security-user", { required: false });
   const securityPass = core.getInput("security-pass", { required: false });
   const allureGenerate = core.getInput("allure-generate", { required: true });
-  const allureCleanResults = core.getInput("allure-clean-results", {
+  const cleanResults = core.getInput("allure-clean-results", {
     required: true,
   });
 
@@ -110,7 +120,7 @@ async function runAction() {
   }
 
   // Clean results
-  if (allureCleanResults === "true") {
+  if (cleanResults === "true") {
     console.log("Cleaning results...");
     const cleanResultsResponse = await fetch(
       `${allureServerUrl}allure-docker-service/clean-results?project_id=${projectId}`,
@@ -125,7 +135,7 @@ async function runAction() {
         } Body: ${await cleanResultsResponse.json()}`
       );
     }
-  } else if (allureCleanResults === "false") {
+  } else if (cleanResults === "false") {
     console.log("Not cleaning results...");
   } else {
     throw Error("allure-clean-results has to be true/false");
